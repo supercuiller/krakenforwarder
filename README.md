@@ -1,25 +1,23 @@
 # kraken_listener
-This Python program listens to trades from Crypto-exchange platform Kraken (https://www.kraken.com) and forwards them on
- a TCP port so you can plug in anything, like a live algorithmic trader or a live analysis tool.
+This Python program listens to trades from Crypto-exchange platform Kraken (https://www.kraken.com) and forwards them on a TCP port so you can plug in anything, like a live algorithmic trader or a live analysis tool.
 
 ## Installation
-
 
 ```pip3 install krakenforwarder``` 
 doesn't work because twine seems kind of broken at the moment.
 
 For now just clone the repo and install the dependencies with patience...
- 
 
 ## Usage
 
 Launch the forwarder in sub-process, then listen
 
-```
+```python
 import time
 from multiprocessing import Process
 
-from krakenforwarder import KrakenForwarder, listen
+from forwarder import KrakenForwarder
+from listener import listen
 
 # configure forwarder
 config_forwarder = {
