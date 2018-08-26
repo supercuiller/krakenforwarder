@@ -4,9 +4,6 @@ This Python program listens to trades from Crypto-exchange platform Kraken (http
 ## Installation
 
 ```pip3 install krakenforwarder``` 
-doesn't work because twine seems kind of broken at the moment.
-
-For now just clone the repo and install the dependencies with patience...
 
 ## Usage
 
