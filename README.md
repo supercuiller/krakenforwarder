@@ -1,4 +1,4 @@
-# kraken_listener
+# krakenforwarder
 This Python program listens to trades from Crypto-exchange platform Kraken (https://www.kraken.com) and forwards them on a TCP port so you can plug in anything, like a live algorithmic trader or a live analysis tool.
 
 ## Installation
