@@ -12,5 +12,11 @@ setup(
     author='Thibaut Castaings',
     author_email='castaings.t@protonmail.com',
     description='Forwards trades from Kraken.com to TCP port',
-    long_description=open('README.md').read()
+    long_description=open('README.md').read(),
+    install_requires=[
+        'pyzmq',
+        'schema',
+        'pyyaml',
+        'krakenex'
+    ],
 )

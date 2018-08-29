@@ -1,17 +1,16 @@
-import json
-import logging
 import time
-from typing import Tuple, List, Any
 
+import json
 import krakenex
+import logging
 import zmq
 from requests import HTTPError
 from schema import Schema
+from typing import Tuple, List, Any
 
 from krakenforwarder.util import FORMAT_INTERNAL_ZMQ_PUBLISH_TRADE, KEY_KRAKEN_ASSET_PAIR, KEY_KRAKEN_ERROR, \
-    KEY_KRAKEN_LAST, \
-    KEY_KRAKEN_PAIR, KEY_KRAKEN_RESULT, KEY_KRAKEN_SINCE, KEY_KRAKEN_TRADES, KEY_PULL_PERIOD, KEY_ZMQ_PUBLISH_PORT, \
-    VALUE_INTERNAL_OVER, VALUE_INTERNAL_TRADE
+    KEY_KRAKEN_LAST, KEY_KRAKEN_PAIR, KEY_KRAKEN_RESULT, KEY_KRAKEN_SINCE, KEY_KRAKEN_TRADES, KEY_PULL_PERIOD, \
+    KEY_ZMQ_PUBLISH_PORT, VALUE_INTERNAL_OVER, VALUE_INTERNAL_TRADE
 
 __all__ = ['KrakenForwarder']
 

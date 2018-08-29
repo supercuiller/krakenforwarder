@@ -1,8 +1,9 @@
 import time
+
 from multiprocessing import Process
 
-from forwarder import KrakenForwarder
-from listener import listen
+from krakenforwarder.forwarder import KrakenForwarder
+from krakenforwarder.listener import listen
 
 
 def test_krakenforwarder():

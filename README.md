@@ -13,8 +13,8 @@ Launch the forwarder in sub-process, then listen
 import time
 from multiprocessing import Process
 
-from forwarder import KrakenForwarder
-from listener import listen
+from krakenforwarder.forwarder import KrakenForwarder
+from krakenforwarder.listener import listen
 
 # configure forwarder
 config_forwarder = {
