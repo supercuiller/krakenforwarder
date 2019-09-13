@@ -1,16 +1,15 @@
-import time
-
 import json
-import krakenex
 import logging
+import time
+from typing import Tuple, List, Any
+
+import krakenex
 import zmq
 from requests import HTTPError
 from schema import Schema
-from typing import Tuple, List, Any
 
-from krakenforwarder.util import FORMAT_INTERNAL_ZMQ_PUBLISH_TRADE, KEY_KRAKEN_ASSET_PAIR, KEY_KRAKEN_ERROR, \
-    KEY_KRAKEN_LAST, KEY_KRAKEN_PAIR, KEY_KRAKEN_RESULT, KEY_KRAKEN_SINCE, KEY_KRAKEN_TRADES, KEY_PULL_PERIOD, \
-    KEY_ZMQ_PUBLISH_PORT, VALUE_INTERNAL_OVER, VALUE_INTERNAL_TRADE
+from krakenforwarder.util import make_msg, F_KRAKEN_ERROR, F_KRAKEN_LAST, F_KRAKEN_PAIR, F_KRAKEN_RESULT, \
+    F_KRAKEN_SINCE, F_KRAKEN_TRADES, F_ASSET_PAIR, F_PULL_PERIOD, F_ZMQ_PUBLISH_PORT, V_INTERNAL_OVER
 
 __all__ = ['KrakenForwarder']
 
@@ -18,13 +17,13 @@ __all__ = ['KrakenForwarder']
 class KrakenForwarder:
     def __init__(self, config: dict):
         Schema({
-            KEY_PULL_PERIOD: int,
-            KEY_KRAKEN_ASSET_PAIR: str,
-            KEY_ZMQ_PUBLISH_PORT: int,
+            F_PULL_PERIOD: int,
+            F_ASSET_PAIR: str,
+            F_ZMQ_PUBLISH_PORT: int,
         }, ignore_extra_keys=True).validate(config)
-        self.__pull_period = config[KEY_PULL_PERIOD]
-        self.__kraken_asset_pair = config[KEY_KRAKEN_ASSET_PAIR]
-        self.__zmq_publish_port = config[KEY_ZMQ_PUBLISH_PORT]
+        self.__pull_period = config[F_PULL_PERIOD]
+        self.__kraken_asset_pair = config[F_ASSET_PAIR]
+        self.__zmq_publish_port = config[F_ZMQ_PUBLISH_PORT]
         self.__socket = None  # ZMQ not initiated -> must be initiated in subprocess
         self.__kraken = krakenex.API()
         self.__kraken_since = None
@@ -36,11 +35,11 @@ class KrakenForwarder:
             ' with {key_pull_period}={value_pull_period},'
             ' {key_asset_pair}={value_asset_pair}'
             ' and {zmq_publish}={value_zmq_publish}'.format(
-                key_pull_period=KEY_PULL_PERIOD,
+                key_pull_period=F_PULL_PERIOD,
                 value_pull_period=self.__pull_period,
-                key_asset_pair=KEY_KRAKEN_ASSET_PAIR,
+                key_asset_pair=F_ASSET_PAIR,
                 value_asset_pair=self.__kraken_asset_pair,
-                zmq_publish=KEY_ZMQ_PUBLISH_PORT,
+                zmq_publish=F_ZMQ_PUBLISH_PORT,
                 value_zmq_publish=self.__zmq_publish_port,
             )
         )
@@ -72,23 +71,22 @@ class KrakenForwarder:
             if len(recent_trades) > 0:
                 # broadcast
                 for trade in recent_trades:
-                    msg = FORMAT_INTERNAL_ZMQ_PUBLISH_TRADE.format(
-                        label=VALUE_INTERNAL_TRADE,
+                    msg = make_msg(
                         pair=self.__kraken_asset_pair,
                         trade_info=trade
                     )
                     self.__socket.send_string(msg)
-                self.__socket.send_string(VALUE_INTERNAL_OVER)
+                self.__socket.send_string(V_INTERNAL_OVER)
 
     def __pull_recent_trades(self) -> Tuple[List[List[Any]], int]:
         query_result = self.__kraken.query_public(
-            KEY_KRAKEN_TRADES, {
-                KEY_KRAKEN_PAIR: self.__kraken_asset_pair,
-                KEY_KRAKEN_SINCE: self.__kraken_since
+            F_KRAKEN_TRADES, {
+                F_KRAKEN_PAIR: self.__kraken_asset_pair,
+                F_KRAKEN_SINCE: self.__kraken_since
             })
 
-        if len(query_result[KEY_KRAKEN_ERROR]) > 0:
-            raise ConnectionError(json.dumps(query_result[KEY_KRAKEN_ERROR]))
+        if len(query_result[F_KRAKEN_ERROR]) > 0:
+            raise ConnectionError(json.dumps(query_result[F_KRAKEN_ERROR]))
 
-        return query_result[KEY_KRAKEN_RESULT][self.__kraken_asset_pair], \
-               int(query_result[KEY_KRAKEN_RESULT][KEY_KRAKEN_LAST])
+        return query_result[F_KRAKEN_RESULT][self.__kraken_asset_pair], \
+            int(query_result[F_KRAKEN_RESULT][F_KRAKEN_LAST])

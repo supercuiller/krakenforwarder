@@ -1,4 +1,19 @@
+import json
 from typing import List
+
+
+F_KRAKEN_ERROR = 'error'
+F_KRAKEN_LAST = 'last'
+F_KRAKEN_PAIR = 'pair'
+F_KRAKEN_RESULT = 'result'
+F_KRAKEN_SINCE = 'since'
+F_KRAKEN_TRADES = 'Trades'
+F_ASSET_PAIR = 'Asset Pair'
+F_PULL_PERIOD = 'Pull Period'
+F_TRADE = 'Trade'
+F_ZMQ_PUBLISH_PORT = 'Publish Port'
+F_KEY_ZMQ_HOSTNAME = 'Hostname'
+V_INTERNAL_OVER = 'OVER'
 
 
 def merge_dicts(dics: List[dict]) -> dict:
@@ -11,16 +26,8 @@ def merge_dicts(dics: List[dict]) -> dict:
     return merged
 
 
-FORMAT_INTERNAL_ZMQ_PUBLISH_TRADE = '{label}::{pair}::{trade_info}'
-KEY_KRAKEN_ASSET_PAIR = 'Asset Pair'
-KEY_KRAKEN_ERROR = 'error'
-KEY_KRAKEN_LAST = 'last'
-KEY_KRAKEN_PAIR = 'pair'
-KEY_KRAKEN_RESULT = 'result'
-KEY_KRAKEN_SINCE = 'since'
-KEY_KRAKEN_TRADES = 'Trades'
-KEY_PULL_PERIOD = 'Pull Period'
-KEY_ZMQ_PUBLISH_PORT = 'Publish Port'
-KEY_ZMQ_HOSTNAME = 'Hostname'
-VALUE_INTERNAL_OVER = 'OVER'
-VALUE_INTERNAL_TRADE = 'TRADE'
+def make_msg(pair: str, trade_info: list) -> str:
+    return json.dumps({
+        F_KRAKEN_PAIR: pair,
+        F_TRADE: trade_info,
+    })

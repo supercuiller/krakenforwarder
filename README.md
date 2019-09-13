@@ -15,44 +15,59 @@ from multiprocessing import Process
 
 from krakenforwarder.forwarder import KrakenForwarder
 from krakenforwarder.listener import listen
+from krakenforwarder.util import F_ASSET_PAIR, F_PULL_PERIOD, F_ZMQ_PUBLISH_PORT, F_KEY_ZMQ_HOSTNAME
 
-# configure forwarder
-config_forwarder = {
-    'Pull Period': 5,  # in seconds
-    'Asset Pair': 'XXBTZEUR',  # see kraken.com API documentation for available values
-    'Publish Port': 5555
+
+cfg_forwarders = [
+    {
+        F_PULL_PERIOD: 5,  # in seconds
+        F_ASSET_PAIR: 'XXBTZEUR',  # see kraken.com API documentation for available values
+        F_ZMQ_PUBLISH_PORT: 5555
+    },
+    {
+        F_PULL_PERIOD: 5,  # in seconds
+        F_ASSET_PAIR: 'XETHZEUR',  # see kraken.com API documentation for available values
+        F_ZMQ_PUBLISH_PORT: 5556
+    },
+]
+
+cfg_listener = {
+    F_KEY_ZMQ_HOSTNAME: 'localhost',
+    F_ZMQ_PUBLISH_PORT: [cfg[F_ZMQ_PUBLISH_PORT] for cfg in cfg_forwarders]
 }
 
-# configure listener
-config_listener = {
-    'Hostname': 'localhost',
-    'Publish Port': 5555  # must be same port as in forwarder config
-}
+proc_forwarders = []
+for cfg in cfg_forwarders:
+    kraken_forwarder = KrakenForwarder(cfg)
+    forward_process = Process(target=kraken_forwarder.forward)
+    proc_forwarders.append(forward_process)
 
-kraken_forwarder = KrakenForwarder(config_forwarder)
-forward_process = Process(target=kraken_forwarder.forward)
-forward_process.start()
+for proc in proc_forwarders:
+    proc.start()
 
 time.sleep(1)
-for msg in listen(config_listener):  # infinite loop
-    print(msg)  # do stuff
 
-forward_process.join()  # is never reached but enables debug
+for msg in listen(cfg_listener):
+    print(msg)
+
+for proc in proc_forwarders:
+    proc.join()
 ```
 
 This prints trades in console:
 
 ```
-TRADE::XXBTZEUR::['5564.00000', '0.00156837', 1534701743.7647, 'b', 'l', '']
-TRADE::XXBTZEUR::['5567.20000', '0.00302475', 1534701826.8837, 'b', 'l', '']
-TRADE::XXBTZEUR::['5567.20000', '0.00265558', 1534701840.5956, 'b', 'l', '']
+{"pair": "XXBTZEUR", "Trade": ["9388.90000", "0.01604115", 1568346002.9574, "b", "m", ""]}
+{"pair": "XXBTZEUR", "Trade": ["9390.00000", "0.03569491", 1568346002.9981, "b", "m", ""]}
+{"pair": "XXBTZEUR", "Trade": ["9390.00000", "0.01000000", 1568346003.0047, "b", "m", ""]}
+{"pair": "XXBTZEUR", "Trade": ["9392.90000", "0.03477392", 1568346003.0213, "b", "m", ""]}
+OVER
 ...
-TRADE::XXBTZEUR::['5578.40000', '0.02944100', 1534709441.8448, 'b', 'l', '']
+{"pair": "XXBTZEUR", "Trade": ["9384.50000", "0.00500000", 1568346015.5326, "s", "m", ""]}
 OVER
-TRADE::XXBTZEUR::['5578.10000', '0.26489984', 1534709451.152, 's', 'l', '']
-TRADE::XXBTZEUR::['5578.10000', '0.81510016', 1534709451.1716, 's', 'l', '']
+{"pair": "XETHZEUR", "Trade": ["162.98000", "0.24458271", 1568346014.6035, "s", "m", ""]}
+{"pair": "XETHZEUR", "Trade": ["162.98000", "0.00063427", 1568346014.6274, "s", "m", ""]}
+{"pair": "XETHZEUR", "Trade": ["162.98000", "0.00000165", 1568346014.6296, "s", "m", ""]}
 OVER
-TRADE::XXBTZEUR::['5578.20000', '0.00494538', 1534709461.3898, 'b', 'm', '']
-TRADE::XXBTZEUR::['5578.00000', '0.28809346', 1534709464.4693, 's', 'm', '']
-OVER
+
 ```
