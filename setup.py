@@ -19,6 +19,7 @@ setup(
         'schema',
         'pyyaml',
         'krakenex',
-        'requests'
+        'requests',
+        'python-dateutil'
     ],
 )
