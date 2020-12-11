@@ -15,6 +15,16 @@ F_ZMQ_PUBLISH_PORT = 'Publish Port'
 F_KEY_ZMQ_HOSTNAME = 'Hostname'
 V_INTERNAL_OVER = 'OVER'
 
+F_DERV_FLAG = '_'
+F_RESULT = 'result'
+F_SUCCESS = 'success'
+F_DERV_URL_ROOT = 'https://futures.kraken.com/derivatives/api/v3/'
+F_DERV_HISTORY = 'history'
+F_DERV_ORDERS = 'orderbook'
+F_DERV_SYMBOL = '?symbol='
+F_DERV_LAST_TIME = '&lastTime='
+F_DERV_SERVER_TIME = 'serverTime'
+
 
 def merge_dicts(dics: List[dict]) -> dict:
     """

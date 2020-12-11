@@ -21,12 +21,12 @@ from krakenforwarder.util import F_ASSET_PAIR, F_PULL_PERIOD, F_ZMQ_PUBLISH_PORT
 cfg_forwarders = [
     {
         F_PULL_PERIOD: 5,  # in seconds
-        F_ASSET_PAIR: 'XXBTZEUR',  # see kraken.com API documentation for available values
+        F_ASSET_PAIR: 'XXBTZEUR',  # see https://support.kraken.com/hc/en-us/articles/360000920306-Ticker-pairs
         F_ZMQ_PUBLISH_PORT: 5555
     },
     {
         F_PULL_PERIOD: 5,  # in seconds
-        F_ASSET_PAIR: 'XETHZEUR',  # see kraken.com API documentation for available values
+        F_ASSET_PAIR: 'XETHZEUR',  # see https://support.kraken.com/hc/en-us/articles/360000920306-Ticker-pairs
         F_ZMQ_PUBLISH_PORT: 5556
     },
 ]
@@ -70,4 +70,16 @@ OVER
 {"pair": "XETHZEUR", "Trade": ["162.98000", "0.00000165", 1568346014.6296, "s", "m", ""]}
 OVER
 
+```
+
+To call forward contracts, instead use
+
+```python
+cfg_forwarders = [
+    {
+        F_PULL_PERIOD: 5,  # in seconds
+        F_ASSET_PAIR: 'pi_xbtusd',  # seee https://support.kraken.com/hc/en-us/articles/360022839531-Tickers for possible choices
+        F_ZMQ_PUBLISH_PORT: 5557
+    },
+]
 ```
