@@ -15,18 +15,19 @@ from multiprocessing import Process
 
 from krakenforwarder.forwarder import KrakenForwarder
 from krakenforwarder.listener import listen
-from krakenforwarder.util import F_ASSET_PAIR, F_PULL_PERIOD, F_ZMQ_PUBLISH_PORT, F_KEY_ZMQ_HOSTNAME
-
+from krakenforwarder.util import *
 
 cfg_forwarders = [
     {
         F_PULL_PERIOD: 5,  # in seconds
         F_ASSET_PAIR: 'XXBTZEUR',  # see https://support.kraken.com/hc/en-us/articles/360000920306-Ticker-pairs
+        F_TYPE: V_SPOT,
         F_ZMQ_PUBLISH_PORT: 5555
     },
     {
         F_PULL_PERIOD: 5,  # in seconds
         F_ASSET_PAIR: 'XETHZEUR',  # see https://support.kraken.com/hc/en-us/articles/360000920306-Ticker-pairs
+        F_TYPE: V_SPOT,
         F_ZMQ_PUBLISH_PORT: 5556
     },
 ]
@@ -75,10 +76,13 @@ OVER
 To call forward contracts, instead use
 
 ```python
+from krakenforwarder.util import *
 cfg_forwarders = [
     {
         F_PULL_PERIOD: 5,  # in seconds
-        F_ASSET_PAIR: 'pi_xbtusd',  # seee https://support.kraken.com/hc/en-us/articles/360022839531-Tickers for possible choices
+        F_ASSET_PAIR: 'pi_xbtusd',
+        F_TYPE: V_FUTURES,
+        # see https://support.kraken.com/hc/en-us/articles/360022839531-Tickers for possible choices
         F_ZMQ_PUBLISH_PORT: 5557
     },
 ]

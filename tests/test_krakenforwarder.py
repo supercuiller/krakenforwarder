@@ -11,19 +11,19 @@ def test_krakenforwarder():
         {
             F_PULL_PERIOD: 5,  # in seconds
             F_ASSET_PAIR: 'XXBTZEUR',  # see kraken.com API documentation for available values
-            F_TYPE: 'spot',
+            F_TYPE: V_SPOT,
             F_ZMQ_PUBLISH_PORT: 5555
         },
         {
             F_PULL_PERIOD: 5,  # in seconds
             F_ASSET_PAIR: 'XETHZEUR',  # see kraken.com API documentation for available values
-            F_TYPE: 'spot',
+            F_TYPE: V_SPOT,
             F_ZMQ_PUBLISH_PORT: 5556
         },
         {
             F_PULL_PERIOD: 5,  # in seconds
             F_ASSET_PAIR: 'pi_xbtusd',
-            F_TYPE: 'futures',
+            F_TYPE: V_FUTURES,
             # see https://support.kraken.com/hc/en-us/articles/360022839531-Tickers for possible choices
             F_ZMQ_PUBLISH_PORT: 5557
         },

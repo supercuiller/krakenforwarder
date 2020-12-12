@@ -13,7 +13,6 @@ from krakenforwarder.util import *
 __all__ = ['KrakenForwarder']
 
 
-
 class KrakenForwarder:
     def __init__(self, config: dict):
         Schema({
@@ -48,6 +47,7 @@ class KrakenForwarder:
 
     def __zmq_init(self) -> None:  # ZMQ has to be called in subprocess
         context = zmq.Context()
+        # noinspection PyUnresolvedReferences
         self.__socket = context.socket(zmq.PUB)
         self.__socket.bind('tcp://*:{port}'.format(port=self.__zmq_publish_port))
 
@@ -57,7 +57,7 @@ class KrakenForwarder:
             current_time = int(time.time())  # current time in seconds
             # wait, eventually
             if current_time % self.__pull_period or current_time == self.__last_time_done:
-                time.sleep(0.1) # need to check rate limit, 
+                time.sleep(0.1)
                 # e.g. https://support.kraken.com/hc/en-us/articles/206548367-What-are-the-API-rate-limits-
                 continue
             
@@ -89,7 +89,6 @@ class KrakenForwarder:
                 self.__socket.send_string(V_INTERNAL_OVER)
 
     def __pull_recent_spot_trades(self) -> Tuple[List[List[Any]], int]:
-
         # pull spot from https://api.kraken.com/0/public/Trades
         query_result = self.__kraken.query_public(
             F_SPOT_TRADES, {
