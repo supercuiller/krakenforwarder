@@ -3,7 +3,7 @@ from multiprocessing import Process
 
 from krakenforwarder.forwarder import KrakenForwarder
 from krakenforwarder.listener import listen
-from krakenforwarder.util import F_ASSET_PAIR, F_PULL_PERIOD, F_ZMQ_PUBLISH_PORT, F_KEY_ZMQ_HOSTNAME
+from krakenforwarder.util import *
 
 
 def test_krakenforwarder():
@@ -11,18 +11,22 @@ def test_krakenforwarder():
         {
             F_PULL_PERIOD: 5,  # in seconds
             F_ASSET_PAIR: 'XXBTZEUR',  # see kraken.com API documentation for available values
+            F_TYPE: 'spot',
             F_ZMQ_PUBLISH_PORT: 5555
         },
         {
             F_PULL_PERIOD: 5,  # in seconds
             F_ASSET_PAIR: 'XETHZEUR',  # see kraken.com API documentation for available values
+            F_TYPE: 'spot',
             F_ZMQ_PUBLISH_PORT: 5556
         },
         {
             F_PULL_PERIOD: 5,  # in seconds
-            F_ASSET_PAIR: 'pi_xbtusd',  # seee https://support.kraken.com/hc/en-us/articles/360022839531-Tickers for possible choices
+            F_ASSET_PAIR: 'pi_xbtusd',
+            F_TYPE: 'futures',
+            # see https://support.kraken.com/hc/en-us/articles/360022839531-Tickers for possible choices
             F_ZMQ_PUBLISH_PORT: 5557
-        },        
+        },
     ]
 
     cfg_listener = {

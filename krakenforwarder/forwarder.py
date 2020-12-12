@@ -1,10 +1,6 @@
-import json
 import logging
 import time
-import datetime
-from dateutil import tz
-import dateutil.parser
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 
 import krakenex
 import requests
@@ -12,16 +8,10 @@ import zmq
 from requests import HTTPError
 from schema import Schema
 
-from krakenforwarder.util import (F_ASSET_PAIR, F_DERV_FLAG, F_DERV_HISTORY,
-                                  F_DERV_SERVER_TIME, F_DERV_SYMBOL,
-                                  F_DERV_URL_ROOT, F_KRAKEN_ERROR,
-                                  F_KRAKEN_LAST, F_KRAKEN_PAIR,
-                                  F_KRAKEN_RESULT, F_KRAKEN_SINCE,
-                                  F_KRAKEN_TRADES, F_PULL_PERIOD, F_RESULT,
-                                  F_SUCCESS, F_ZMQ_PUBLISH_PORT,
-                                  V_INTERNAL_OVER, make_msg)
+from krakenforwarder.util import *
 
 __all__ = ['KrakenForwarder']
+
 
 
 class KrakenForwarder:
@@ -29,10 +19,12 @@ class KrakenForwarder:
         Schema({
             F_PULL_PERIOD: int,
             F_ASSET_PAIR: str,
+            F_TYPE: str,
             F_ZMQ_PUBLISH_PORT: int,
         }, ignore_extra_keys=True).validate(config)
         self.__pull_period = config[F_PULL_PERIOD]
         self.__kraken_asset_pair = config[F_ASSET_PAIR]
+        self.__kraken_type = config[F_TYPE]
         self.__zmq_publish_port = config[F_ZMQ_PUBLISH_PORT]
         self.__socket = None  # ZMQ not initiated -> must be initiated in subprocess
         self.__kraken = krakenex.API()
@@ -70,10 +62,12 @@ class KrakenForwarder:
                 continue
             
             # get relevant function
-            if F_DERV_FLAG in self.__kraken_asset_pair:
+            if self.__kraken_type == V_FUTURES:
                 get_recent_trades = self.__pull_recent_derv_trades
+            elif self.__kraken_type == V_SPOT:
+                get_recent_trades = self.__pull_recent_spot_trades
             else:
-                get_recent_trades = self.__pull_recent_trades 
+                raise ValueError(f"Trade type '{self.__kraken_type}' is unknown.")
 
             # get recent trades
             try:
@@ -94,37 +88,40 @@ class KrakenForwarder:
                     self.__socket.send_string(msg)
                 self.__socket.send_string(V_INTERNAL_OVER)
 
-    def __pull_recent_trades(self) -> Tuple[List[List[Any]], int]:
+    def __pull_recent_spot_trades(self) -> Tuple[List[List[Any]], int]:
 
         # pull spot from https://api.kraken.com/0/public/Trades
         query_result = self.__kraken.query_public(
-            F_KRAKEN_TRADES, {
-                F_KRAKEN_PAIR: self.__kraken_asset_pair,
-                F_KRAKEN_SINCE: self.__kraken_since
+            F_SPOT_TRADES, {
+                F_PAIR: self.__kraken_asset_pair,
+                F_SPOT_SINCE: self.__kraken_since
             })
-        if len(query_result[F_KRAKEN_ERROR]) > 0:
-            raise ConnectionError(json.dumps(query_result[F_KRAKEN_ERROR]))
+        if len(query_result[F_SPOT_ERROR]) > 0:
+            raise ConnectionError(json.dumps(query_result[F_SPOT_ERROR]))
 
-        return query_result[F_KRAKEN_RESULT][self.__kraken_asset_pair], \
-            int(query_result[F_KRAKEN_RESULT][F_KRAKEN_LAST])
+        return query_result[F_SPOT_RESULT][self.__kraken_asset_pair], \
+            int(query_result[F_SPOT_RESULT][F_SPOT_LAST])
 
-    def __pull_recent_derv_trades(self)->Tuple[List[List[Any]], int]:
-
+    def __pull_recent_derv_trades(self) -> Tuple[List[List[Any]], int]:
         # sample call for futures
         # https://futures.kraken.com/derivatives/api/v3/history?symbol=pi_xbtusd&lastTime=2019-02-14T09:31:26.027Z
         asset_pair = self.__kraken_asset_pair
-        url = F_DERV_URL_ROOT + F_DERV_HISTORY + F_DERV_SYMBOL + asset_pair
-        
+
+        url = f"""{F_DERV_URL_ROOT}{F_DERV_HISTORY}?{F_DERV_SYMBOL}={asset_pair}"""
+
         # GET request
         query_result = requests.get(url).json()
-        if query_result[F_RESULT] != F_SUCCESS:
+        if query_result[F_DERV_RESULT] != F_DERV_SUCCESS:
             raise ConnectionError(json.dumps(query_result[F_DERV_HISTORY]))
 
-        # deal with conversion from zulu time
-        server_time = query_result[F_DERV_SERVER_TIME]
-        utc_time = dateutil.parser.isoparse(server_time)
+        # filter out all trades that happened before self.__kraken_since
+        if self.__kraken_since is not None:
+            query_result[F_DERV_HISTORY] = [
+                trade for trade in query_result[F_DERV_HISTORY] if trade[F_DERV_TIME] > self.__kraken_since
+            ]
 
-        # hack: hard-coded start of Unix epoch
-        epoch_start = datetime.datetime(1970,1,1,tzinfo=tz.tzutc())
-        secs = int((utc_time - epoch_start).total_seconds())
-        return query_result[F_DERV_HISTORY], secs
+        if len(query_result[F_DERV_HISTORY]) > 0:
+            kraken_since = max([trade[F_DERV_TIME] for trade in query_result[F_DERV_HISTORY]])
+        else:
+            kraken_since = self.__kraken_since
+        return query_result[F_DERV_HISTORY], kraken_since
