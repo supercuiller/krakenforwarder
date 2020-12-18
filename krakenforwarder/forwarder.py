@@ -68,6 +68,7 @@ class KrakenForwarder:
                     get_recent_trades = self.__pull_recent_derv_trades
                 except JSONDecodeError as e:
                     self.__logger.warning(f"Cannot decode API result. {str(e)}")
+                    continue
             elif self.__kraken_type == V_SPOT:
                 get_recent_trades = self.__pull_recent_spot_trades
             else:
