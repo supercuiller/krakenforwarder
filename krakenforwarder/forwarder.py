@@ -3,6 +3,7 @@ import time
 from typing import Any, Tuple
 
 import krakenex
+from json import JSONDecodeError
 import requests
 import zmq
 from requests import HTTPError
@@ -63,7 +64,10 @@ class KrakenForwarder:
             
             # get relevant function
             if self.__kraken_type == V_FUTURES:
-                get_recent_trades = self.__pull_recent_derv_trades
+                try:
+                    get_recent_trades = self.__pull_recent_derv_trades
+                except JSONDecodeError as e:
+                    self.__logger.warning(f"Cannot decode API result. {str(e)}")
             elif self.__kraken_type == V_SPOT:
                 get_recent_trades = self.__pull_recent_spot_trades
             else:
