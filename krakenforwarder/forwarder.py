@@ -64,11 +64,7 @@ class KrakenForwarder:
             
             # get relevant function
             if self.__kraken_type == V_FUTURES:
-                try:
-                    get_recent_trades = self.__pull_recent_derv_trades
-                except JSONDecodeError as e:
-                    self.__logger.warning(f"Cannot decode API result. {str(e)}")
-                    continue
+                get_recent_trades = self.__pull_recent_derv_trades
             elif self.__kraken_type == V_SPOT:
                 get_recent_trades = self.__pull_recent_spot_trades
             else:
@@ -78,8 +74,9 @@ class KrakenForwarder:
             try:
                 recent_trades, self.__kraken_since = get_recent_trades()
                 self.__last_time_done = current_time
-            except (ConnectionError, HTTPError) as error_msg:
+            except (ConnectionError, HTTPError, JSONDecodeError) as error_msg:
                 self.__logger.error(error_msg)
+                self.__logger.info('Resume')
                 continue
 
             self.__logger.info('Got {number_of_trades} trades'.format(number_of_trades=len(recent_trades)))
@@ -116,7 +113,7 @@ class KrakenForwarder:
         # GET request
         query_result = requests.get(url).json()
         if query_result[F_DERV_RESULT] != F_DERV_SUCCESS:
-            raise ConnectionError(json.dumps(query_result[F_DERV_HISTORY]))
+            raise ConnectionError(json.dumps(query_result))
 
         # filter out all trades that happened before self.__kraken_since
         if self.__kraken_since is not None:
